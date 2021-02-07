@@ -507,15 +507,15 @@ class Baboon {
     static getTimestamp(block) {
         const blockText = block.querySelector('span').textContent;
         const matches = this.matchTimeString(blockText);
-        if (!matches || matches.length < 2) return null;
-        const timeParts = matches[1].split(':').map(part => parseInt(part));
+        if (!matches) return null;
+        const timeParts = matches[0].split(':').map(part => parseInt(part));
         if (timeParts.length == 3) return timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
         else if (timeParts.length == 2) return timeParts[0] * 60 + timeParts[1];
         else return null;
     }
 
     static matchTimeString(text) {
-        return text.match(/((?:\d+:)?\d+:\d\d)\D/); // start w/ m:ss or h:mm:ss
+        return text.match(/(?:\d+:)?\d+:\d\d/); // m:ss or h:mm:ss
     }
 
     static getTimeString(time) {

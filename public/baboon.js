@@ -224,11 +224,11 @@ class Baboon {
 
     getContentUrl(block) {
         const ytMatches = block.string.match(/{{\[?\[?youtube]?]?:\s+(.*)}}/);
-        if (ytMatches) return ytMatches[0];
+        if (ytMatches) return ytMatches[1];
         const audioMatches = block.string.match(/{{\[?\[?audio]?]?:\s+(.*)}}/);
-        if (audioMatches) return audioMatches[0];
+        if (audioMatches) return audioMatches[1];
         const articleMatches = block.string.match(/Read URL::?\s+(.*)/);
-        if (articleMatches) return articleMatches[0];
+        if (articleMatches) return articleMatches[1];
     }
 
     processKey(e) {

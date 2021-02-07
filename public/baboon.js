@@ -176,7 +176,7 @@ class Baboon {
     }
 
     getIrBlock(url) {
-        if (this.irBlocks.contains(url)) return this.irBlocks.get(url);
+        if (this.irBlocks.has(url)) return this.irBlocks.get(url);
         this.irBlocks = this.getIrBlocks();
         return this.irBlocks.get(url);
     }

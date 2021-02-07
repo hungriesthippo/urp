@@ -211,7 +211,7 @@ class Baboon {
     }
 
     getContentUrl(block) {
-        const ytMatches = block.string.match(/{{\[?\[?youtube]?]?:\s+(.*)}}/);
+        const ytMatches = block.string.match(/{{\[?\[?(?:youtube|video)]?]?:\s+(.*)}}/);
         if (ytMatches) return ytMatches[1];
         const audioMatches = block.string.match(/{{\[?\[?audio]?]?:\s+(.*)}}/);
         if (audioMatches) return audioMatches[1];

@@ -511,6 +511,7 @@ class Baboon {
 
     static getTimestamp(block) {
         const blockText = block.querySelector('span')?.textContent;
+        if (!blockText) return null;
         const matches = this.matchTimeString(blockText);
         if (!matches) return null;
         const timeParts = matches[0].split(':').map(part => parseInt(part));

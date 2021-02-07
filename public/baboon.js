@@ -1,5 +1,6 @@
 class Player {
     constructor() {
+        console.log(baboon.irBlocks, this.getUrl());
         this.irBlockUid = baboon.irBlocks.get(this.getUrl());
         // TODO: figure out how to kill the interval when a player is no longer active
         if (this.irBlockUid) window.setInterval(() => this.recordTime(), 5000);

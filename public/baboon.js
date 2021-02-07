@@ -311,7 +311,7 @@ class Baboon {
                 div.style.overflow = 'scroll';
                 div.style.height = '600px';
                 div.style['border-radius'] = '12px';
-                div.style['box-shadow'] = '0px 3px 20px rgba(0, 0, 0, 0.03) !important';
+                div.style['box-shadow'] = 'inset 0px 3px 10px rgba(0, 0, 0, 0.1)';
                 div.style.background = 'white';
                 div.style.margin = '8px';
                 div.style.padding = '40px';

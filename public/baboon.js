@@ -175,6 +175,12 @@ class Baboon {
         document.addEventListener('keyup', e => this.processKey(e));
     }
 
+    getIrBlock(url) {
+        if (this.irBlocks.contains(url)) return this.irBlocks.get(url);
+        this.irBlocks = this.getIrBlocks();
+        return this.irBlocks.get(url);
+    }
+
     getIrBlocks() {
         const irMap = new Map();
         const irResults = roamAlphaAPI.q(`

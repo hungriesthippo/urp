@@ -1,6 +1,6 @@
 class Player {
-    constructor() {
-        this.irBlockUid = baboon.irBlocks.get(this.getUrl());
+    constructor(url) {
+        this.irBlockUid = baboon.irBlocks.get(url);
         // TODO: figure out how to kill the interval when a player is no longer active
         if (this.irBlockUid) window.setInterval(() => this.recordTime(), 5000);
     }
@@ -40,13 +40,8 @@ class Player {
 
 class YouTubePlayer extends Player {
     constructor(elId, videoId, height, width) {
+        super(`https://youtube.com/watch?v=${videoId}`);
         this.player = new window.YT.Player(elId, { videoId, height, width });
-        this.videoid = videoId;
-        super();
-    }
-
-    getUrl() {
-        return `https://youtube.com/watch?v=${this.videoId}`;
     }
 
     getTime() {
@@ -81,12 +76,8 @@ class YouTubePlayer extends Player {
 
 class AudioPlayer extends Player {
     constructor(el) {
+        super(this.el.src);
         this.el = el;
-        super();
-    }
-
-    getUrl() {
-        return this.el.src;
     }
 
     getTime() {
@@ -121,13 +112,8 @@ class AudioPlayer extends Player {
 
 class ArticlePlayer extends Player {
     constructor(el, url) {
+        super(url);
         this.el = el;
-        this.url = url;
-        super();
-    }
-
-    getUrl() {
-        return this.url;
     }
 
     getTime() {

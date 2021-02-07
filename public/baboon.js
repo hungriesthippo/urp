@@ -41,7 +41,7 @@ class Player {
 
 class YouTubePlayer extends Player {
     constructor(elId, videoId, height, width) {
-        super(`https://youtube.com/watch?v=${videoId}`);
+        super(`yt:${videoId}`);
         this.player = new window.YT.Player(elId, { videoId, height, width });
     }
 
@@ -216,7 +216,7 @@ class Baboon {
 
     getContentUrl(block) {
         const ytMatches = block.string.match(/{{\[?\[?(?:youtube|video)]?]?:\s+(.*)}}/);
-        if (ytMatches) return ytMatches[1];
+        if (ytMatches) return `yt:${Baboon.extractVideoId(ytMatches[1])}`;
         const audioMatches = block.string.match(/{{\[?\[?audio]?]?:\s+(.*)}}/);
         if (audioMatches) return audioMatches[1];
         const articleMatches = block.string.match(/Read URL::?\s+(.*)/);

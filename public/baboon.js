@@ -6,7 +6,6 @@ class Player {
     }
 
     recordTime() {
-        console.log(`maybe record time ${this.getTime()} for ${this.irBlockUid}`);
         if (!this.getTime() || this.lastTime == this.getTime()) return;
         this.lastTime = this.getTime();
         let text = roamAlphaAPI.q(`

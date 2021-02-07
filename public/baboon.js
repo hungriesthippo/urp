@@ -1,12 +1,13 @@
 class Player {
     constructor() {
-        if (this.getUrl()) this.irBlockUid = baboon.irBlocks.get(this.getUrl());
-        window.setInterval(() => this.recordTime(), 5000);
+        this.irBlockUid = baboon.irBlocks.get(this.getUrl());
+        // TODO: figure out how to kill the interval when a player is no longer active
+        if (this.irBlockUid) window.setInterval(() => this.recordTime(), 5000);
     }
 
     recordTime() {
         console.log(`maybe record time ${this.getTime()} for ${this.irBlockUid}`);
-        if (!this.irBlockUid || !this.getTime() || this.lastTime == this.getTime()) return;
+        if (!this.getTime() || this.lastTime == this.getTime()) return;
         this.lastTime = this.getTime();
         let text = roamAlphaAPI.q(`
         [:find (pull ?e [:block/string])
@@ -25,10 +26,6 @@ class Player {
             }
         });
     }
-
-    getUrl() {}
-
-    getTime() {}
 
     togglePlay() {
         this.isPlaying() ? this.pause() : this.play();

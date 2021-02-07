@@ -198,25 +198,27 @@ class Baboon {
         [:find (pull ?e [:block/uid :block/refs :block/string])
         :where [?e :block/refs ?ref]
                [?ref :node/title "ir"]]`);
-        console.log(`found ${irResults[0].length} ir blocks`);
-        irResults[0].forEach(block => {
-            const contentUrl = getRelatedContentUrl(block);
-            if (contentUrl) {
-                irMap.set(contentUrl, block.uid);
-            }
-        });
+        irResults.map(result => result[0])
+            .forEach(block => {
+                const contentUrl = this.getRelatedContentUrl(block);
+                if (contentUrl) {
+                    irMap.set(contentUrl, block.uid);
+                }
+            });
         console.log(irMap);
         return irMap;
     }
 
     getRelatedContentUrl(block) {
+        // Find content URL in direct children of the ir block's reference
+        // TODO: all descendants?
+        // TODO: cousin of the ir block?
         return roamAlphaAPI.q(`
         [:find (pull ?e [:block/refs :block/string])
-            :where [?parent :block/children ?e]
-                   [?parent :block/children ?ir]
-                   [?ir :block/uid "${block.uid}"]]`)[0]
-            .filter(cousin => cousin.uid !== block.uid)
-            .map(this.getContentUrl)
+            :where [?ref :block/children ?e]
+                   [?ir :block/refs ?ref]
+                   [?ir :block/uid "${block.uid}"]]`)
+            .map(result => this.getContentUrl(result[0]))
             .filter(contentUrl => contentUrl != null)[0];
     }
 

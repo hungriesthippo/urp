@@ -1,11 +1,13 @@
 class Player {
     constructor(url) {
         this.irBlockUid = baboon.getIrBlock(url);
+        console.log(this.irBlockUid);
         // TODO: figure out how to kill the interval when a player is no longer active
         if (this.irBlockUid) window.setInterval(() => this.recordTime(), 5000);
     }
 
     recordTime() {
+        console.log(`maybe record time ${this.getTime()}`);
         if (!this.getTime() || this.lastTime == this.getTime()) return;
         this.lastTime = this.getTime();
         let text = roamAlphaAPI.q(`

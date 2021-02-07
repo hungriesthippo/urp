@@ -81,8 +81,8 @@ class YouTubePlayer extends Player {
 
 class AudioPlayer extends Player {
     constructor(el) {
-        super();
         this.el = el;
+        super();
     }
 
     getUrl() {

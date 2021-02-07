@@ -178,7 +178,9 @@ class Baboon {
     }
 
     getIrBlock(url) {
+        console.log(`get ir block for ${url}`);
         if (this.irBlocks.has(url)) return this.irBlocks.get(url);
+        console.log('reload');
         this.irBlocks = this.getIrBlocks();
         return this.irBlocks.get(url);
     }

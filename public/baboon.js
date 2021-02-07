@@ -5,6 +5,7 @@ class Player {
     }
 
     recordTime() {
+        console.log(`maybe record time ${this.getTime()} for ${this.irBlockUid}`);
         if (!this.irBlockUid || !this.getTime() || this.lastTime == this.getTime()) return;
         this.lastTime = this.getTime();
         let text = roamAlphaAPI.q(`
@@ -205,7 +206,6 @@ class Baboon {
                     irMap.set(contentUrl, block.uid);
                 }
             });
-        console.log(irMap);
         return irMap;
     }
 

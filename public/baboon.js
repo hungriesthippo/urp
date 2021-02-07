@@ -129,7 +129,7 @@ class ArticlePlayer extends Player {
     }
 
     getUrl() {
-        return url;
+        return this.url;
     }
 
     getTime() {

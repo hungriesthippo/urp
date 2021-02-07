@@ -1,6 +1,6 @@
 class Player {
     constructor(url) {
-        this.irBlockUid = baboon.irBlocks.get(url);
+        this.irBlockUid = baboon.getIrBlock(url);
         // TODO: figure out how to kill the interval when a player is no longer active
         if (this.irBlockUid) window.setInterval(() => this.recordTime(), 5000);
     }
@@ -228,7 +228,7 @@ class Baboon {
         else if (e.keyCode === 187) // alt-=
             player.setPlaybackRate(player.getPlaybackRate() + 0.25);
         else if (e.keyCode === 78) { // alt-n
-            const timeStr = getTimeString(player.getTime());
+            const timeStr = Baboon.getTimeString(player.getTime());
             const oldTxt = document.querySelector("textarea.rm-block-input").value;
             fillTheBlock(`${timeStr} ${oldTxt}`);
         }

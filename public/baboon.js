@@ -60,7 +60,11 @@ class YouTubePlayer extends Player {
     }
 
     isPlaying() {
-        return this.player.getPlayerState() == 1;
+        try {
+            return this.player.getPlayerState() == 1;
+        } catch(e) {
+            return false;
+        }
     }
 
     getPlaybackRate() {
@@ -328,7 +332,7 @@ class Baboon {
                         return false; // Don't follow link since we already have the player
                     } else {
                         // Allow time to open and activate the player.
-                        setTimeout(() => this.playFromTime(this.players.get(refUid), time), 3000);
+                        setTimeout(() => this.playFromTime(this.players.get(refUid), time), 5000);
                         return true;
                     }
                 });

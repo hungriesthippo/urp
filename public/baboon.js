@@ -326,8 +326,9 @@ class Baboon {
                 const res = roamAlphaAPI.q(`[:find (pull ?e [:block/string]) :where [?e :block/uid "${elUid}"]]`);
                 if (!res || !res.length) return;
                 const refUid = res[0][0].string.match(/\(\(\((.*)\)\)\)/)[1];
-                el.addEventListener('click', () => {
+                el.addEventListener('click', (e) => {
                     if (this.players.has(refUid) && Baboon.isBlockOnPage(refUid)) {
+                        e.preventDefault();
                         this.playFromTime(this.players.get(refUid), time);
                         return false; // Don't follow link since we already have the player
                     } else {

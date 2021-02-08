@@ -236,7 +236,7 @@ class Baboon {
         else if (e.keyCode === 78) { // alt-n
             const text = document.querySelector("textarea.rm-block-input").value;
             // TODO: remove existing timestamp link
-            fillTheBlock(`${this.getTimestampLink(player)} ${text}`);
+            Baboon.fillTheBlock(`${this.getTimestampLink(player)} ${text}`);
         }
     }
 
@@ -337,6 +337,7 @@ class Baboon {
     }
 
     playFromTime(player, time) {
+        if (!player) console.warn('no player to play');
         if (this.getActivePlayer() !== player) this.getActivePlayer().pause();
         player.setTime(time);
         player.play();

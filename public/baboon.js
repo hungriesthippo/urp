@@ -317,28 +317,34 @@ class Baboon {
         Array.from(document.getElementsByClassName('rm-alias--block'))
             .filter(el => Baboon.matchTimestamp(el.textContent) && !el.classList.contains('timestamp-activated'))
             .forEach(el => {
+                const time = Baboon.toTime(Baboon.matchTimestamp(el.textContent)[0]);
                 const elUid = Baboon.getContainingBlockUid(el);
-                const res = roamAlphaAPI.q(`[:find (pull ?e :block/string) :where [?e :block/uid "${elUid}"]]`);
+                const res = roamAlphaAPI.q(`[:find (pull ?e [:block/string]) :where [?e :block/uid "${elUid}"]]`);
                 if (!res || !res.length) return;
                 const refUid = res[0][0].string.match(/\(\(\((.*)\)\)\)/)[1];
-                const player = this.players.get(refUid);
-                const time = Baboon.toTime(Baboon.matchTimestamp(el.textContent)[0]);
                 el.addEventListener('click', () => {
-                    if (this.getActivePlayer() === player) {
-                        player.setTime(time);
-                        player.play();
-                        return false; // don't follow link since we already have the player
+                    if (this.players.has(refUid) && Baboon.isBlockOnPage(refUid)) {
+                        this.playFromTime(this.players.get(refUid), time);
+                        return false; // Don't follow link since we already have the player
                     } else {
-                        if (this.getActivePlayer()) this.getActivePlayer().pause();
-                        setTimeout(() => {
-                            player.setTime(time);
-                            player.play();
-                        }, 1000);
+                        // Allow time to open and activate the player.
+                        setTimeout(() => this.playFromTime(this.players.get(refUid), time), 3000);
                         return true;
                     }
                 });
                 el.classList.add('timestamp-activated');
             });
+    }
+
+    playFromTime(player, time) {
+        if (this.getActivePlayer() !== player) this.getActivePlayer().pause();
+        player.setTime(time);
+        player.play();
+    }
+
+    static isBlockOnPage(uid) {
+        return Array.from(document.getElementsByClassName('rm-block__input'))
+            .findIndex(el => el.id.slice(-9) === uid) >= 0;
     }
 
     static getContainingBlockUid(el) {

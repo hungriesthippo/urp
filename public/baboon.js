@@ -527,10 +527,8 @@ class Baboon {
         return `[${timestamp}](((${uid})))`;
     }
 
-    static toTime(block) {
-        const blockText = block.querySelector('span')?.textContent;
-        if (!blockText) return null;
-        const matches = this.matchTimestamp(blockText);
+    static toTime(text) {
+        const matches = this.matchTimestamp(text);
         if (!matches) return null;
         const timeParts = matches[0].split(':').map(part => parseInt(part));
         if (timeParts.length == 3) return timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];

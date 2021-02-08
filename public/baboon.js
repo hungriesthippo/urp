@@ -315,7 +315,7 @@ class Baboon {
 
         // Activate timestamps
         Array.from(document.getElementsByClassName('rm-alias--block'))
-            .filter(el => Baboon.matchTimestamp(el.textContent))
+            .filter(el => Baboon.matchTimestamp(el.textContent) && !el.classList.contains('timestamp-activated'))
             .forEach(el => {
                 const elUid = Baboon.getContainingBlockUid(el);
                 const res = roamAlphaAPI.q(`[:find (pull ?e :block/string) :where [?e :block/uid "${elUid}"]]`);
@@ -337,6 +337,7 @@ class Baboon {
                         return true;
                     }
                 });
+                el.classList.add('timestamp-activated');
             });
     }
 
@@ -536,7 +537,7 @@ class Baboon {
     }
 
     static matchTimestampLink(text) {
-        const linkMatch = text.match(/\[(.*)\]\(.*\)/);
+        const linkMatch = text.match(/\[(.+)\]\(.+\)/);
         return linkMatch && this.matchTimestamp(linkMatch[1]);
     }
 

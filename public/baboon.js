@@ -11,17 +11,17 @@ class Player {
         let text = roamAlphaAPI.q(`
         [:find (pull ?e [:block/string])
         :where [?e :block/uid "${this.irBlockUid}"]]`)[0][0].string;
-        const timeMatches = Baboon.matchTimeString(text);
-        const timeString = Baboon.getTimeString(this.lastTime);
+        const timeMatches = Baboon.matchTimestampLink(text);
+        // TODO: pass in uid to avoid call to Baboon class instance
         if (timeMatches) {
-            text = text.replace(timeMatches[0], timeString);
+            text = text.replace(timeMatches[0], baboon.getTimestampLink(this));
         } else {
-            text = `${timeString} ${text}`
+            text = `${baboon.getTimestampLink(this)} ${text}`
         }
         roamAlphaAPI.updateBlock({
             block: {
                 uid: this.irBlockUid,
-                string: text 
+                string: text
             }
         });
     }
@@ -234,14 +234,14 @@ class Baboon {
         else if (e.keyCode === 187) // alt-=
             player.setPlaybackRate(player.getPlaybackRate() + 0.25);
         else if (e.keyCode === 78) { // alt-n
-            const timeStr = Baboon.getTimeString(player.getTime());
-            const oldTxt = document.querySelector("textarea.rm-block-input").value;
-            fillTheBlock(`${timeStr} ${oldTxt}`);
+            const text = document.querySelector("textarea.rm-block-input").value;
+            // TODO: remove existing timestamp link
+            fillTheBlock(`${this.getTimestampLink(player)} ${text}`);
         }
     }
 
     activate() {
-        if (typeof(YT) == 'undefined' || typeof(YT.Player) == 'undefined') {
+        if (typeof (YT) == 'undefined' || typeof (YT.Player) == 'undefined') {
             const tag = document.createElement('script');
             tag.src = 'https://www.youtube.com/iframe_api';
             const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -253,34 +253,33 @@ class Baboon {
             .forEach(el => {
                 // ignore breadcrumbs and page log 
                 if (el.closest('.rm-zoom-item') !== null) return;
-                if (!this.players.has(el.id)) {
+                const blockUid = Baboon.getContainingBlockUid(el);
+                if (!this.players.has(blockUid)) {
                     const player = new AudioPlayer(el);
-                    this.players.set(el.id, player);
+                    this.players.set(blockUid, player);
                 }
-                Baboon.addTimestampControls(el.closest('.roam-block-container'), this.players.get(el.id));
             })
 
         Array.from(document.getElementsByTagName('iframe'))
             .filter(iframe => iframe.src.includes('youtube.com'))
             .forEach(el => {
-                if (typeof(YT) == 'undefined') return;
+                if (typeof (YT) == 'undefined') return;
                 // ignore breadcrumbs and page log 
                 if (el.closest('.rm-zoom-item') !== null) return
                 let frameId;
                 if (el.src.indexOf("enablejsapi") === -1) {
-                    var ytId = Baboon.extractVideoId(el.src);
+                    const blockUid = Baboon.getContainingBlockUid(el);
+                    const ytId = Baboon.extractVideoId(el.src);
                     frameId = "yt-" + el.closest('.roam-block').id;
                     el.parentElement.id = frameId;
                     el.parentElement.classList.remove("rm-video-player__container", "hoverparent");
                     el.remove();
-                    this.players.set(
-                        frameId,
-                        new YouTubePlayer(frameId, ytId, this.params.vidHeight, this.params.vidWidth));
                     Baboon.wrapIframe(frameId);
+                    const player = new YouTubePlayer(frameId, ytId, this.params.vidHeight, this.params.vidWidth);
+                    this.players.set(blockUid, player);
                 } else {
                     frameId = el.id;
                 }
-                Baboon.addTimestampControls(el.closest('.roam-block-container'), this.players.get(frameId));
                 var sideBarOpen = document.getElementById("right-sidebar").childElementCount - 1;
                 //Make iframes flexible
                 this.adjustIframe(frameId, sideBarOpen);
@@ -296,6 +295,7 @@ class Baboon {
                 const url = block.querySelector('.rm-block__input').textContent.split(': ')[1];
                 const div = document.createElement('div');
                 div.id = `article-${new Date().getTime()}`;
+                // TODO: extract to css file
                 div.style.overflow = 'scroll';
                 div.style.height = '600px';
                 div.style['border-radius'] = '12px';
@@ -309,8 +309,39 @@ class Baboon {
                 iframe.src = `https://us-central1-roam-page.cloudfunctions.net/app?url=${encodeURI(url)}`;
                 div.appendChild(iframe);
                 block.appendChild(div);
-                this.players.set(div.id, new ArticlePlayer(div, url));
-            })
+                const player = new ArticlePlayer(div, url);
+                this.players.set(Baboon.getContainingBlockUid(el), player);
+            });
+
+        // Activate timestamps
+        Array.from(document.getElementsByClassName('rm-alias--block'))
+            .filter(el => Baboon.matchTimestamp(el.textContent))
+            .forEach(el => {
+                const elUid = Baboon.getContainingBlockUid(el);
+                const res = roamAlphaAPI.q(`[:find (pull ?e :block/string) :where [?e :block/uid "${elUid}"]]`);
+                if (!res || !res.length) return;
+                const refUid = res[0][0].string.match(/\(\(\((.*)\)\)\)/)[1];
+                const player = this.players.get(refUid);
+                const time = Baboon.toTime(Baboon.matchTimestamp(el.textContent)[0]);
+                el.addEventListener('click', () => {
+                    if (this.getActivePlayer() === player) {
+                        player.setTime(time);
+                        player.play();
+                        return false; // don't follow link since we already have the player
+                    } else {
+                        if (this.getActivePlayer()) this.getActivePlayer().pause();
+                        setTimeout(() => {
+                            player.setTime(time);
+                            player.play();
+                        }, 1000);
+                        return true;
+                    }
+                });
+            });
+    }
+
+    static getContainingBlockUid(el) {
+        return el.closest('.rm-block__input').id.slice(-9);
     }
 
     static wrapIframe(id) {
@@ -372,7 +403,7 @@ class Baboon {
         //TimeStamp
         Mousetrap.bind(this.params.grabTimeKey, e => {
             e.preventDefault()
-            const player = this.getActivePlayer();
+            const playerUid = this.getActivePlayer();
             if (!player) return;
             const timeStr = new Date(playing.getTime() * 1000).toISOString().substr(11, 8)
             const oldTxt = document.querySelector("textarea.rm-block-input").value;
@@ -467,6 +498,12 @@ class Baboon {
         return allPlayers.find(p => p.isPlaying()) || allPlayers[0];
     }
 
+    getPlayerUid(player) {
+        for (let [uid, p] of this.players) {
+            if (p === player) return uid;
+        }
+    }
+
     static extractVideoId(url) {
         var regExp = /^(https?:\/\/)?((www\.)?(youtube(-nocookie)?|youtube.googleapis)\.com.*(v\/|v=|vi=|vi\/|e\/|embed\/\/?|user\/.*\/u\/\d+\/)|youtu\.be\/)([_0-9a-z-]+)/i;
         var match = url.match(regExp);
@@ -477,42 +514,16 @@ class Baboon {
         }
     }
 
-    static addTimestampControls(block, player) {
-        if (block.children.length < 2) return
-        const childBlocks = Array.from(block.children[1].querySelectorAll('.rm-block__input'));
-        childBlocks.forEach(child => {
-            const timestamp = this.getTimestamp(child);
-            const buttonIfPresent = this.getControlButton(child);
-            const timestampChanged = buttonIfPresent !== null && timestamp != buttonIfPresent.dataset.timestamp;
-            if (buttonIfPresent !== null && (timestamp === null || timestampChanged)) {
-                buttonIfPresent.remove();
-            }
-            if (timestamp !== null && (buttonIfPresent === null || timestampChanged)) {
-                this.addControlButton(child, timestamp, () => {
-                    player.setTime(timestamp); player.play()
-                })
-            }
-        });
+    getTimestampLink(player) {
+        const uid = this.getPlayerUid(player);
+        const timestamp = Baboon.toTimestamp(player.getTime());
+        return `[${timestamp}](((${uid})))`;
     }
 
-    static getControlButton(block) {
-        return block.parentElement.querySelector('.timestamp-control');
-    }
-
-    static addControlButton(block, timestamp, fn) {
-        const button = document.createElement('button');
-        button.innerText = '►';
-        button.classList.add('timestamp-control');
-        button.dataset.timestamp = timestamp;
-        button.style.borderRadius = '50%';
-        button.addEventListener('click', fn);
-        block.parentElement.insertBefore(button, block);
-    }
-
-    static getTimestamp(block) {
+    static toTime(block) {
         const blockText = block.querySelector('span')?.textContent;
         if (!blockText) return null;
-        const matches = this.matchTimeString(blockText);
+        const matches = this.matchTimestamp(blockText);
         if (!matches) return null;
         const timeParts = matches[0].split(':').map(part => parseInt(part));
         if (timeParts.length == 3) return timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
@@ -520,11 +531,16 @@ class Baboon {
         else return null;
     }
 
-    static matchTimeString(text) {
+    static matchTimestamp(text) {
         return text.match(/(?:\d+:)?\d+:\d\d/); // m:ss or h:mm:ss
     }
 
-    static getTimeString(time) {
+    static matchTimestampLink(text) {
+        const linkMatch = text.match(/\[(.*)\]\(.*\)/);
+        return linkMatch && this.matchTimestamp(linkMatch[1]);
+    }
+
+    static toTimestamp(time) {
         return new Date(time * 1000).toISOString().substr(11, 8);
     }
 

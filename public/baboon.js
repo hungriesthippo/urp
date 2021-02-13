@@ -219,7 +219,7 @@ class Baboon {
         if (ytMatches) return `yt:${Baboon.extractVideoId(ytMatches[1])}`;
         const audioMatches = block.string.match(/{{\[?\[?audio]?]?:\s+(.*)}}/);
         if (audioMatches) return audioMatches[1];
-        const articleMatches = block.string.match(/Read URL::?\s+(.*)/);
+        const articleMatches = block.string.match(/URL::?\s+(.*)/);
         if (articleMatches) return articleMatches[1];
     }
 
@@ -290,7 +290,7 @@ class Baboon {
             });
 
         Array.from(document.getElementsByClassName('rm-attr-ref'))
-            .filter(attr => attr.textContent.startsWith('Read URL'))
+            .filter(attr => attr.textContent.startsWith('URL'))
             .forEach(el => {
                 if (el.closest('.rm-zoom-item') !== null) return;
                 const block = el.closest('.roam-block-container');
@@ -548,7 +548,9 @@ class Baboon {
 
     static matchTimestampLink(text) {
         const linkMatch = text.match(/\[(.+)\]\(.+\)/);
-        return linkMatch && this.matchTimestamp(linkMatch[1]);
+        if (linkMatch && this.matchTimestamp(linkMatch[1])) {
+            return linkMatch;
+        }
     }
 
     static toTimestamp(time) {

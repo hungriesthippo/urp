@@ -125,4 +125,9 @@ baboonCasts.addControlButton = (block, label, fn) => {
   parentEl.insertBefore(button, parentEl.querySelectorAll('.roam-block')[0]);
 }
 
+const rssScript = document.createElement('script');
+rssScript.stype = "text/javascript";
+rssScript.src = "https://unpkg.com/rss-parser@3.3.0/dist/rss-parser.min.js";
+rssScript.async = true;
+document.getElementsByTagName("head")[0].appendChild(rssScript);
 window.setInterval(() => window.baboonCasts.initFeed(), 1000);

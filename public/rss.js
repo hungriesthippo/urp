@@ -4,7 +4,7 @@ baboonCasts.defaultConfig = {
   feedAttribute: "Podcast"
 }
 
-baboonCasts.settings = Object.assign(defaultConfig, window.baboonCastsSettings || {});
+baboonCasts.settings = Object.assign(baboonCasts.defaultConfig, window.baboonCastsSettings || {});
 
 /** Adds a feed control button (if needed) to any block containing a feed link. */
 baboonCasts.initFeed = () => {

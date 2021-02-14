@@ -57,7 +57,7 @@ class Feed {
 
 baboonCasts.showFeedEntries = async (block, feedUrl) => {
   const feed = new Feed(feedUrl);
-  feed.load().then(items => populateFeed(block, items));
+  feed.load().then(items => baboonCasts.populateFeed(block, items));
 }
 
 baboonCasts.populateFeed = (block, items) => {
